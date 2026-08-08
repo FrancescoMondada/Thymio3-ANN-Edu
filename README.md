@@ -22,6 +22,13 @@ Chrome or Edge over HTTPS):
 
 https://francescomondada.github.io/Thymio3-ANN-Edu/
 
+## For teachers
+
+A ready-to-run classroom plan (≈45–60 min) to introduce neural networks with
+this interface:
+
+[docs/class-plan.md](docs/class-plan.md)
+
 ## Demo loop
 
 1. **See** — watch a sensor light up (simulated obstacle, or a real object in
