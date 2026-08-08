@@ -28,7 +28,7 @@ A ready-to-run classroom plan (≈45–60 min) to introduce neural networks with
 this interface, including a figure of the full network (5 sensors → 10 weights
 + 2 biases → 2 neurons → 2 wheels):
 
-[docs/class-plan.md](docs/class-plan.md) · [docs/ann-structure.svg](docs/ann-structure.svg)
+[docs/class-plan.md](docs/class-plan.md) · [docs/ann-structure.png](docs/ann-structure.png)
 
 ## Demo loop
 

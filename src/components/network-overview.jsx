@@ -43,11 +43,19 @@ function RobotAndWeights({
           {t("panelSensors")} <span className="panel-sub">{t("panelProximity")}</span>
         </h2>
         <div className="sense-ops" aria-hidden="true">
-          <span className="sense-op" style={{ left: `${(CROSS_X / MAP.width) * 100}%` }}>
-            {t("opMultiply")}
+          <span
+            className="sense-op sense-op-multiply"
+            style={{ left: `${(CROSS_X / MAP.width) * 100}%` }}
+            title={t("opMultiply")}
+          >
+            {t("opMultiplyCol")}
           </span>
-          <span className="sense-op" style={{ left: `${(ADD_X / MAP.width) * 100}%` }}>
-            {t("opAdd")}
+          <span
+            className="sense-op sense-op-add"
+            style={{ left: `${(ADD_X / MAP.width) * 100}%` }}
+            title={t("opAdd")}
+          >
+            {t("opAddCol")}
           </span>
         </div>
       </div>
@@ -365,7 +373,9 @@ export default function NetworkOverview({
       </div>
 
       <div className="network-add">
-        <p className="network-add-label">{t("opAdd")}</p>
+        <p className="network-add-label" title={t("opAdd")}>
+          {t("opAddCol")}
+        </p>
         {wheels.map((wheel) => (
           <AddCard
             evaluation={evaluation}

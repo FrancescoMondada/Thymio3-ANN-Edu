@@ -30,7 +30,47 @@ Optional stretch: invent a behaviour by tweaking weights (Custom).
 Show this figure once before diving into Sense → Multiply → Add → Send.
 It is the whole “brain” used by the interface:
 
-![Network structure: 5 sensors, 10 synaptic weights plus 2 biases, 2 adder neurons, 2 wheels](ann-structure.svg)
+![Network structure: 5 sensors, 10 synaptic weights plus 2 biases, 2 adder neurons, 2 wheels](ann-structure.png)
+
+[Open as SVG](ann-structure.svg) if you prefer a vector copy for slides.
+
+```mermaid
+flowchart LR
+  subgraph sensors["5 sensors"]
+    S1[right]
+    S2[right-centre]
+    S3[centre]
+    S4[left-centre]
+    S5[left]
+  end
+
+  subgraph weights["10 synaptic weights ×"]
+    W[sensor × wheel]
+  end
+
+  subgraph biases["2 biases"]
+    BL[bias L]
+    BR[bias R]
+  end
+
+  subgraph neurons["2 neurons +"]
+    NL["+ left"]
+    NR["+ right"]
+  end
+
+  subgraph wheels["2 wheels"]
+    ML[left wheel]
+    MR[right wheel]
+  end
+
+  sensors --> weights
+  weights --> NL
+  weights --> NR
+  BL --> NL
+  BR --> NR
+  NL --> ML
+  NR --> MR
+```
 
 | Block | Count | Role in class language |
 |-------|------:|------------------------|
@@ -68,7 +108,7 @@ Suggested starting state:
 
 Ask: *“How does a robot decide to turn away from a wall without someone writing ‘if wall then turn’ for every case?”*
 
-Show the Thymio diagram (or the [network structure figure](ann-structure.svg)).
+Show the Thymio diagram (or the [network structure figure](ann-structure.png)).
 Point to sensors on the left and motors on the right.  
 Promise: *“Today we’ll open a very small brain and watch the numbers move.”*
 
