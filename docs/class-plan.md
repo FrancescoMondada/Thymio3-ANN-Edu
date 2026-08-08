@@ -25,6 +25,25 @@ Optional stretch: invent a behaviour by tweaking weights (Custom).
 
 ---
 
+## Network structure (for the board)
+
+Show this figure once before diving into Sense → Multiply → Add → Send.
+It is the whole “brain” used by the interface:
+
+![Network structure: 5 sensors, 10 synaptic weights plus 2 biases, 2 adder neurons, 2 wheels](ann-structure.svg)
+
+| Block | Count | Role in class language |
+|-------|------:|------------------------|
+| **Sensors** | 5 | Front proximity inputs (right … left) |
+| **Synaptic weights** | 10 | Each sensor × each wheel (`×`) — push or pull |
+| **Biases** | 2 | Constant add into each neuron even if sensors are quiet |
+| **Neurons** | 2 | Each **adds** its bias + five weighted sensors (`+`) |
+| **Wheels** | 2 | Neuron total is **sent** as left / right motor speed |
+
+So pupils can count: **5 → (10 + 2) → 2 → 2**.
+
+---
+
 ## Materials
 
 - Projector or shared screen (teacher machine).
@@ -49,7 +68,8 @@ Suggested starting state:
 
 Ask: *“How does a robot decide to turn away from a wall without someone writing ‘if wall then turn’ for every case?”*
 
-Show the Thymio diagram. Point to sensors on the left and motors on the right.  
+Show the Thymio diagram (or the [network structure figure](ann-structure.svg)).
+Point to sensors on the left and motors on the right.  
 Promise: *“Today we’ll open a very small brain and watch the numbers move.”*
 
 ---
