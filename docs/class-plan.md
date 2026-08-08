@@ -240,7 +240,7 @@ Accept answers like: *“numbers that mix sensor readings into motor speeds.”*
 
 - **Younger / shorter:** stop after Sense → Multiply → one preset (Avoid). Skip bias.
 - **Older / STEM:** show the formula  
-  `wheel ≈ activation( bias + Σ weight × sensor/1000 )`  
+  `wheel ≈ bias + Σ (weight × sensor/1000)`  
   and link to the expert app: [Thymio3-ANN](https://github.com/FrancescoMondada/Thymio3-ANN).
 - **Language:** UI is EN/FR/DE/IT — match the class language in the top bar.
 
