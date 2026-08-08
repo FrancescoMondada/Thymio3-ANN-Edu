@@ -3,59 +3,23 @@ import { activityColour, formatSigned, signColour } from "../ann/palette";
 import { crossPoints, crossRadius } from "../ann/shapes";
 import { WEIGHT_LIMIT, CONTRIBUTION_FULL_SCALE } from "../ann/network";
 import { useI18n } from "../i18n/i18n";
-import { sensorLabelKey } from "../ann/robot-layout";
+import {
+  BAR_LENGTH,
+  BAR_THICKNESS,
+  BODY_PATH,
+  FRONT_WINDOWS,
+  MAP,
+  SENSOR_SPOTS,
+  WHEELS,
+  lookVector,
+  sensorLabelKey,
+} from "../ann/robot-layout";
 
-/** Tiny top-down Thymio with one sensor lit — used in the sensors column. */
-function MiniRobot({ activeKey }) {
-  const spots = [
-    { key: "left", x: 18, y: 38 },
-    { key: "frontLeft", x: 32, y: 18 },
-    { key: "center", x: 50, y: 12 },
-    { key: "frontRight", x: 68, y: 18 },
-    { key: "right", x: 82, y: 38 },
-  ];
-
-  return (
-    <svg className="mini-robot" viewBox="0 0 100 90" aria-hidden="true">
-      <path
-        d="M22,40 C22,18 38,8 50,8 C62,8 78,18 78,40 L78,72 C78,80 66,84 50,84 C34,84 22,80 22,72 Z"
-        fill="#f4f7f8"
-        stroke="#1c2430"
-        strokeWidth="2"
-      />
-      <ellipse cx="20" cy="58" rx="7" ry="14" fill="#b8c2c8" stroke="#1c2430" strokeWidth="1.5" />
-      <ellipse cx="80" cy="58" rx="7" ry="14" fill="#b8c2c8" stroke="#1c2430" strokeWidth="1.5" />
-      {spots.map((spot) => {
-        const active = spot.key === activeKey;
-        return (
-          <g key={spot.key}>
-            {active ? (
-              <line
-                x1={spot.x}
-                y1={spot.y}
-                x2={spot.x + (spot.x - 50) * 0.35}
-                y2={spot.y - 14}
-                stroke="#c85a1e"
-                strokeDasharray="3 2"
-                strokeWidth="1.5"
-              />
-            ) : null}
-            <circle
-              cx={spot.x}
-              cy={spot.y}
-              r={active ? 5 : 3.5}
-              fill={active ? "#c85a1e" : "#9aa5b1"}
-              stroke="#1c2430"
-              strokeWidth="1"
-            />
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
-
-function SensorBars({ evaluation, focusSensor, onSelectSensor }) {
+/**
+ * Top-down Thymio with distance bars pointing the way each sensor looks.
+ * Flat front at the top, round back at the bottom — like the real robot.
+ */
+function SensorMap({ evaluation, focusSensor, onSelectSensor }) {
   const { t } = useI18n();
 
   return (
@@ -63,34 +27,125 @@ function SensorBars({ evaluation, focusSensor, onSelectSensor }) {
       <h2 className="panel-title">
         {t("panelSensors")} <span className="panel-sub">{t("panelProximity")}</span>
       </h2>
-      <ul className="sensor-bar-list">
-        {SENSORS.map((sensor) => {
-          const raw = Math.round((evaluation.inputs[sensor.key] ?? 0) * 1000);
+
+      <svg
+        className="sensor-map"
+        viewBox={`0 0 ${MAP.width} ${MAP.height}`}
+        role="img"
+        aria-label={t("panelSensors")}
+      >
+        {/* Soft shadow of the D-body */}
+        <ellipse cx="150" cy="372" rx="88" ry="12" fill="rgba(0,0,0,0.08)" />
+
+        <path className="map-body" d={BODY_PATH} />
+        {/* Emphasise the flat front edge of the D-shape. */}
+        <line className="map-front-edge" x1="58" y1="118" x2="242" y2="118" />
+
+        {FRONT_WINDOWS.map((win, index) => (
+          <rect
+            className="map-window"
+            key={index}
+            x={win.x}
+            y={win.y}
+            width={win.w}
+            height={win.h}
+            rx="2"
+          />
+        ))}
+
+        {/* LEGO stud hint + pen hole + button ring — iconic flat-front Thymio */}
+        <rect className="map-studs" x="78" y="190" width="52" height="48" rx="4" />
+        <rect className="map-studs" x="170" y="190" width="52" height="48" rx="4" />
+        <circle className="map-pen" cx="150" cy="168" r="10" />
+        <circle className="map-buttons" cx="150" cy="278" r="28" />
+        <circle className="map-buttons-inner" cx="150" cy="278" r="8" />
+
+        {Object.entries(WHEELS).map(([key, wheel]) => (
+          <ellipse
+            className="map-wheel"
+            key={key}
+            cx={wheel.cx}
+            cy={wheel.cy}
+            rx={wheel.rx}
+            ry={wheel.ry}
+          />
+        ))}
+
+        {SENSOR_SPOTS.map((spot) => {
+          const raw = Math.round((evaluation.inputs[spot.key] ?? 0) * 1000);
           const ratio = Math.min(1, raw / SENSOR_FULL_SCALE);
-          const active = sensor.key === focusSensor;
+          const active = spot.key === focusSensor;
+          const dir = lookVector(spot.angle);
+          const fillLen = BAR_LENGTH * ratio;
+          // Local bar coords: along +x in a rotated frame, then rotate by angle.
+          // In look-space, +length is outward; SVG rotate uses degrees clockwise from +x,
+          // while our angle is from forward (−y). Convert: svgRot = angle - 90.
+          const svgRot = spot.angle - 90;
+          const labelOffset = 14 + BAR_THICKNESS / 2;
+          const labelX = spot.x + dir.x * (BAR_LENGTH * 0.55) - dir.y * labelOffset * (spot.labelSide === "right" ? -1 : 1);
+          const labelY = spot.y + dir.y * (BAR_LENGTH * 0.55) + dir.x * labelOffset * (spot.labelSide === "right" ? -1 : 1);
+          const nameY = spot.labelSide === "above" ? spot.y - BAR_LENGTH - 8 : labelY - 6;
+          const valueY = spot.labelSide === "above" ? spot.y - BAR_LENGTH + 8 : labelY + 10;
+          const nameX = spot.labelSide === "above" ? spot.x : labelX;
+          const valueX = nameX;
 
           return (
-            <li key={sensor.key}>
-              <button
-                className={`sensor-bar-row${active ? " is-active" : ""}`}
-                onClick={() => onSelectSensor(sensor.key)}
-                type="button"
-              >
-                <span className="sensor-bar-name">{t(sensorLabelKey(sensor.key))}</span>
-                <span className="sensor-bar-track">
-                  <span
-                    className="sensor-bar-fill"
-                    style={{ width: `${ratio * 100}%`, background: activityColour(ratio) }}
-                  />
-                </span>
-                <span className="sensor-bar-value">{raw}</span>
-              </button>
-            </li>
+            <g
+              key={spot.key}
+              className={`map-sensor${active ? " is-active" : ""}`}
+              onClick={() => onSelectSensor(spot.key)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") onSelectSensor(spot.key);
+              }}
+            >
+              <g transform={`translate(${spot.x} ${spot.y}) rotate(${svgRot})`}>
+                <rect
+                  className="map-bar-plate"
+                  x={0}
+                  y={-BAR_THICKNESS / 2}
+                  width={BAR_LENGTH}
+                  height={BAR_THICKNESS}
+                  rx={3}
+                />
+                <rect
+                  className="map-bar-fill"
+                  x={0}
+                  y={-BAR_THICKNESS / 2}
+                  width={fillLen}
+                  height={BAR_THICKNESS}
+                  rx={3}
+                  style={{ fill: activityColour(ratio) }}
+                />
+                <rect
+                  className="map-bar-outline"
+                  x={0}
+                  y={-BAR_THICKNESS / 2}
+                  width={BAR_LENGTH}
+                  height={BAR_THICKNESS}
+                  rx={3}
+                />
+              </g>
+
+              <circle
+                className="map-sensor-node"
+                cx={spot.x}
+                cy={spot.y}
+                r={active ? 9 : 7}
+                style={{ fill: activityColour(ratio) }}
+              />
+
+              <text className="map-sensor-name" x={nameX} y={nameY}>
+                {t(sensorLabelKey(spot.key))}
+              </text>
+              <text className="map-sensor-value" x={valueX} y={valueY}>
+                {raw}
+              </text>
+            </g>
           );
         })}
-      </ul>
-      <MiniRobot activeKey={focusSensor} />
-      <img alt="" className="sensors-photo" src="/T3-rendering.jpg" />
+      </svg>
     </div>
   );
 }
@@ -164,8 +219,7 @@ function MotorsPanel({ evaluation, focusWheel }) {
 }
 
 /**
- * SEE overview: sensors → × on the focused path → sum into the focused wheel → motors.
- * Activation/clamp is applied but not shown as its own step.
+ * SEE overview: sensors map → × on the focused path → sum into the focused wheel → motors.
  */
 export default function NetworkOverview({
   network,
@@ -181,7 +235,7 @@ export default function NetworkOverview({
 
   return (
     <div className={`network-overview mode-${mode}`}>
-      <SensorBars
+      <SensorMap
         evaluation={evaluation}
         focusSensor={focusSensor}
         onSelectSensor={onSelectSensor}
@@ -202,7 +256,7 @@ export default function NetworkOverview({
             return (
               <g key={sensor.key} opacity={focused ? 1 : 0.28}>
                 <path
-                  d={`M 8,${y} C 70,${y} 130,${y} 212,${180}`}
+                  d={`M 8,${y} C 70,${y} 130,${y} 212,180`}
                   fill="none"
                   stroke={focused ? signColour(c, 1) : "#9aa5b1"}
                   strokeWidth={focused ? 2.2 + 4.5 * Math.sqrt(f) : 1.4}

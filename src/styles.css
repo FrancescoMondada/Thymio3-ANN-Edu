@@ -270,7 +270,7 @@ input {
 
 .network-overview {
   display: grid;
-  grid-template-columns: minmax(220px, 0.9fr) minmax(280px, 1.3fr) minmax(200px, 0.75fr);
+  grid-template-columns: minmax(260px, 1fr) minmax(280px, 1.2fr) minmax(200px, 0.7fr);
   gap: 16px;
   align-items: stretch;
   min-height: 420px;
@@ -297,79 +297,113 @@ input {
   text-transform: lowercase;
 }
 
-.sensor-bar-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.sensors-panel {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  min-height: 0;
 }
 
-.sensor-bar-row {
+.sensor-map {
   width: 100%;
-  display: grid;
-  grid-template-columns: 72px 1fr 48px;
-  gap: 8px;
-  align-items: center;
-  border: 2px solid transparent;
-  background: #fff;
-  border-radius: 10px;
-  padding: 6px 8px;
+  height: auto;
+  display: block;
+  flex: 1;
+}
+
+.map-body {
+  fill: #f2f5f7;
+  stroke: var(--ink);
+  stroke-width: 3;
+}
+
+.map-front-edge {
+  stroke: var(--ink);
+  stroke-width: 5;
+  stroke-linecap: square;
+}
+
+.map-window {
+  fill: #2a323c;
+  stroke: none;
+}
+
+.map-studs {
+  fill: #e2e8ec;
+  stroke: var(--ink);
+  stroke-width: 1.2;
+}
+
+.map-pen {
+  fill: #d8dee3;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+.map-buttons {
+  fill: #e8eef1;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+}
+
+.map-buttons-inner {
+  fill: #cfd8dd;
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+.map-wheel {
+  fill: #b7c0c6;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+.map-sensor {
   cursor: pointer;
-  text-align: left;
 }
 
-.sensor-bar-row.is-active {
-  border-color: #c85a1e;
-  box-shadow: 0 0 0 1px rgba(200, 90, 30, 0.2);
+.map-bar-plate {
+  fill: #fff;
 }
 
-.sensor-bar-name {
-  font-size: 0.82rem;
+.map-bar-fill {
+  transition: width 80ms linear, fill 80ms linear;
+}
+
+.map-bar-outline {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+.map-sensor.is-active .map-bar-outline {
+  stroke-width: 3;
+}
+
+.map-sensor-node {
+  stroke: var(--ink);
+  stroke-width: 2;
+  transition: fill 80ms linear;
+}
+
+.map-sensor.is-active .map-sensor-node {
+  stroke-width: 3;
+}
+
+.map-sensor-name {
+  fill: var(--text-muted);
+  font-size: 11px;
   font-weight: 700;
-  color: var(--text-muted);
+  text-anchor: middle;
+  pointer-events: none;
 }
 
-.sensor-bar-track {
-  position: relative;
-  height: 16px;
-  background: #eef2f4;
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-}
-
-.sensor-bar-fill {
-  display: block;
-  height: 100%;
-  transition: width 80ms linear, background 80ms linear;
-}
-
-.sensor-bar-value {
+.map-sensor-value {
+  fill: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  font-size: 0.85rem;
-  text-align: right;
-}
-
-.mini-robot {
-  display: block;
-  width: 100%;
-  max-width: 160px;
-  margin: 14px auto 8px;
-}
-
-.sensors-photo {
-  display: block;
-  width: 88px;
-  height: 88px;
-  object-fit: cover;
-  object-position: center 35%;
-  margin: 8px auto 0;
-  border-radius: 12px;
-  border: 2px solid #fff;
-  box-shadow: 0 4px 12px rgba(28, 36, 48, 0.12);
+  text-anchor: middle;
+  pointer-events: none;
 }
 
 .network-mid {
