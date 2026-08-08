@@ -1,9 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" role="img" aria-labelledby="title desc">
   <title id="title">Thymio ANN structure</title>
   <desc id="desc">
-    Five sensors each connect to one left-wheel weight and one right-wheel weight.
-    The five left weights and bias L converge on the left neuron; the five right
-    weights and bias R converge on the right neuron; each neuron drives one wheel.
+    Five sensors connect with smooth curves to left and right weights. Each weight
+    and bias meets its neuron with a spline that arrives perpendicular to the circle.
   </desc>
 
   <style>
@@ -30,11 +29,10 @@
 
   <text class="label title" x="48" y="30">5 sensors</text>
   <text class="label title" x="280" y="30">synaptic weights (x)</text>
-  <text class="label title" x="500" y="30">bias</text>
-  <text class="label title" x="640" y="30">neuron (+)</text>
-  <text class="label title" x="800" y="30">wheel</text>
+  <text class="label title" x="540" y="30">bias</text>
+  <text class="label title" x="660" y="30">neuron (+)</text>
+  <text class="label title" x="820" y="30">wheel</text>
 
-  <!-- Sensors: centers Sy = 102, 202, 302, 422, 542 -->
   <g id="sensors">
     <rect class="box sensor" x="32" y="80" width="150" height="44" rx="10"/>
     <rect class="box sensor" x="32" y="180" width="150" height="44" rx="10"/>
@@ -48,7 +46,6 @@
     <text class="label small" x="48" y="547">left</text>
   </g>
 
-  <!-- LEFT weights: centers 120, 160, 200, 240, 280 — index-aligned with sensors -->
   <text class="label small" x="268" y="92" fill="#3a5ea8">5 weights to LEFT</text>
   <g id="wL">
     <rect class="box weight" x="290" y="104" width="58" height="32" rx="8"/>
@@ -63,36 +60,32 @@
     <text class="sym" x="319" y="280" fill="#3a5ea8">x</text>
   </g>
 
-  <!-- Bias L on the side -->
-  <rect class="box bias" x="480" y="100" width="86" height="40" rx="10"/>
-  <text class="label small" x="496" y="125">bias L</text>
+  <rect class="box bias" x="545" y="100" width="86" height="40" rx="10"/>
+  <text class="label small" x="561" y="125">bias L</text>
 
-  <!-- Left neuron + wheel: center 680,200 -->
-  <circle class="box neuron" cx="680" cy="200" r="36"/>
-  <text class="sym" x="680" y="200">+</text>
-  <text class="label tiny" x="680" y="252" text-anchor="middle">left neuron</text>
-  <rect class="box motor" x="800" y="176" width="130" height="48" rx="10"/>
-  <text class="label small" x="822" y="205">left wheel</text>
+  <!-- left neuron at 700,200 r=36 -->
+  <circle class="box neuron" cx="700" cy="200" r="36"/>
+  <text class="sym" x="700" y="200">+</text>
+  <text class="label tiny" x="700" y="252" text-anchor="middle">left neuron</text>
+  <rect class="box motor" x="820" y="176" width="130" height="48" rx="10"/>
+  <text class="label small" x="842" y="205">left wheel</text>
 
-  <!-- Sensor i -> left weight i (polyline: out, then into weight) -->
-  <path class="line" d="M182,102 H290"/>
-  <path class="line" d="M182,202 H220 V160 H290"/>
-  <path class="line" d="M182,302 H230 V200 H290"/>
-  <path class="line" d="M182,422 H240 V240 H290"/>
-  <path class="line" d="M182,542 H250 V280 H290"/>
+  <!-- Sensor -> LEFT weights (unchanged good splines) -->
+  <path class="line" d="M182,102 C230,102 260,120 290,120"/>
+  <path class="line" d="M182,202 C230,202 260,160 290,160"/>
+  <path class="line" d="M182,302 C235,302 260,200 290,200"/>
+  <path class="line" d="M182,422 C235,422 260,240 290,240"/>
+  <path class="line" d="M182,542 C240,542 265,280 290,280"/>
 
-  <!-- Each left weight -> left neuron (separate rays into the circle) -->
-  <path class="line-L" d="M348,120 C420,120 520,150 646,178"/>
-  <path class="line-L" d="M348,160 C430,160 540,175 646,190"/>
-  <path class="line-L" d="M348,200 H644"/>
-  <path class="line-L" d="M348,240 C430,240 540,225 646,210"/>
-  <path class="line-L" d="M348,280 C420,280 520,250 646,222"/>
-  <!-- Bias L -> left neuron -->
-  <path class="line-L" d="M566,120 C620,120 640,160 652,178"/>
-  <!-- Neuron -> wheel -->
-  <path class="line-L" d="M716,200 H800"/>
+  <!-- LEFT weights/bias -> neuron: arrive along the radial (perpendicular to rim) -->
+  <path class="line-L" d="M348.0,120.0 C459.1,121.3 625.7,133.1 673.2,175.9"/>
+  <path class="line-L" d="M348.0,160.0 C451.5,160.4 606.6,164.2 666.4,187.1"/>
+  <path class="line-L" d="M348.0,200.0 C448.8,200.0 600.0,200.0 664.0,200.0"/>
+  <path class="line-L" d="M348.0,240.0 C451.5,239.6 606.6,235.8 666.4,212.9"/>
+  <path class="line-L" d="M348.0,280.0 C459.1,278.7 625.7,266.9 673.2,224.1"/>
+  <path class="line-L" d="M631.0,120.0 C640.6,120.8 655.0,127.9 680.9,169.5"/>
+  <path class="line-L" d="M736,200 H820"/>
 
-  <!-- RIGHT weights: centers 406, 446, 486, 526, 566 -->
   <text class="label small" x="268" y="378" fill="#c85a1e">5 weights to RIGHT</text>
   <g id="wR">
     <rect class="box weight" x="290" y="390" width="58" height="32" rx="8"/>
@@ -107,33 +100,31 @@
     <text class="sym" x="319" y="566" fill="#c85a1e">x</text>
   </g>
 
-  <rect class="box bias" x="480" y="386" width="86" height="40" rx="10"/>
-  <text class="label small" x="496" y="411">bias R</text>
+  <rect class="box bias" x="545" y="386" width="86" height="40" rx="10"/>
+  <text class="label small" x="561" y="411">bias R</text>
 
-  <circle class="box neuron" cx="680" cy="486" r="36"/>
-  <text class="sym" x="680" y="486">+</text>
-  <text class="label tiny" x="680" y="538" text-anchor="middle">right neuron</text>
-  <rect class="box motor" x="800" y="462" width="130" height="48" rx="10"/>
-  <text class="label small" x="818" y="491">right wheel</text>
+  <circle class="box neuron" cx="700" cy="486" r="36"/>
+  <text class="sym" x="700" y="486">+</text>
+  <text class="label tiny" x="700" y="538" text-anchor="middle">right neuron</text>
+  <rect class="box motor" x="820" y="462" width="130" height="48" rx="10"/>
+  <text class="label small" x="838" y="491">right wheel</text>
 
-  <!-- Sensor i -> right weight i -->
-  <path class="line" d="M182,102 H250 V406 H290"/>
-  <path class="line" d="M182,202 H240 V446 H290"/>
-  <path class="line" d="M182,302 H230 V486 H290"/>
-  <path class="line" d="M182,422 H220 V526 H290"/>
-  <path class="line" d="M182,542 H290"/>
+  <!-- Sensor -> RIGHT weights -->
+  <path class="line" d="M182,102 C240,102 265,406 290,406"/>
+  <path class="line" d="M182,202 C235,202 260,446 290,446"/>
+  <path class="line" d="M182,302 C235,302 260,486 290,486"/>
+  <path class="line" d="M182,422 C230,422 260,526 290,526"/>
+  <path class="line" d="M182,542 C230,542 260,566 290,566"/>
 
-  <!-- Each right weight -> right neuron -->
-  <path class="line-R" d="M348,406 C420,406 520,436 646,464"/>
-  <path class="line-R" d="M348,446 C430,446 540,461 646,476"/>
-  <path class="line-R" d="M348,486 H644"/>
-  <path class="line-R" d="M348,526 C430,526 540,511 646,496"/>
-  <path class="line-R" d="M348,566 C420,566 520,536 646,508"/>
-  <!-- Bias R -> right neuron -->
-  <path class="line-R" d="M566,406 C620,406 640,446 652,464"/>
-  <path class="line-R" d="M716,486 H800"/>
+  <!-- RIGHT weights/bias -> neuron: radial arrival -->
+  <path class="line-R" d="M348.0,406.0 C459.1,407.3 625.7,419.1 673.2,461.9"/>
+  <path class="line-R" d="M348.0,446.0 C451.5,446.4 606.6,450.2 666.4,473.1"/>
+  <path class="line-R" d="M348.0,486.0 C448.8,486.0 600.0,486.0 664.0,486.0"/>
+  <path class="line-R" d="M348.0,526.0 C451.5,525.6 606.6,521.8 666.4,498.9"/>
+  <path class="line-R" d="M348.0,566.0 C459.1,564.7 625.7,552.9 673.2,510.1"/>
+  <path class="line-R" d="M631.0,406.0 C640.6,406.8 655.0,413.9 680.9,455.5"/>
+  <path class="line-R" d="M736,486 H820"/>
 
-  <!-- Footer: no activation -->
   <rect x="32" y="612" width="936" height="22" rx="6" fill="#fff" stroke="#1c2430" stroke-width="1.5"/>
   <text class="label small" x="500" y="627" text-anchor="middle">
     wheel = bias + sum(sensor x weight)   |   5 sensors -&gt; 10 weights + 2 biases -&gt; 2 neurons -&gt; 2 wheels
