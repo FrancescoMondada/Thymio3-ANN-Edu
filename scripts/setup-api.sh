@@ -4,8 +4,10 @@
 set -euo pipefail
 
 REPO="https://github.com/Mobsya/thymio3-ts-api.git"
-VENDOR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/vendor"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VENDOR_DIR="$(cd "$SCRIPT_DIR/.." && pwd)/vendor"
 API_DIR="$VENDOR_DIR/thymio3-ts-api"
+OVERLAY_DIR="$SCRIPT_DIR/thymio-overlays"
 
 mkdir -p "$VENDOR_DIR"
 
@@ -18,6 +20,12 @@ else
   rm -rf "$API_DIR"
   echo "==> Cloning $REPO"
   git clone --depth 1 "$REPO" "$API_DIR"
+fi
+
+if [ -d "$OVERLAY_DIR" ]; then
+  echo "==> Applying Edu overlays (fast motor path)"
+  cp "$OVERLAY_DIR/command.ts" "$API_DIR/src/command.ts"
+  cp "$OVERLAY_DIR/thymio.ts" "$API_DIR/src/thymio.ts"
 fi
 
 echo "==> Installing API dependencies"

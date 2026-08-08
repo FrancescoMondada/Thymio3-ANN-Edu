@@ -1,16 +1,24 @@
 import { useI18n } from "../i18n/i18n";
-import { formatSigned, signColour } from "../ann/palette";
+import { formatSigned, formatSensorReading, formatWeightFactor, signColour } from "../ann/palette";
 import { sensorLabelKey } from "../ann/robot-layout";
 
 /**
- * Three clear beats matching the mockups: sense → multiply → add into the wheel.
- * Activation/clamp is not shown as a separate step.
+ * Sense → multiply → add (in the neuron) → send to motor speed.
  */
-export default function StoryStrip({ sensorKey, wheelKey, rawValue, weight, contribution }) {
+export default function StoryStrip({
+  sensorKey,
+  wheelKey,
+  rawValue,
+  weight,
+  contribution,
+  sum,
+  output,
+}) {
   const { t, tf } = useI18n();
   const wheel = wheelKey === "left" ? t("wheelLeft") : t("wheelRight");
   const effect =
     weight > 0 ? t("effectPush") : weight < 0 ? t("effectPull") : t("effectNone");
+  const clamped = Number.isFinite(sum) && Number.isFinite(output) && Math.round(sum) !== output;
 
   return (
     <div className="story-strip" aria-live="polite">
@@ -20,7 +28,7 @@ export default function StoryStrip({ sensorKey, wheelKey, rawValue, weight, cont
           <p className="story-label">{t("storyStepSense")}</p>
           <p className="story-main">
             {tf("storySenseShort", { sensor: t(sensorLabelKey(sensorKey)) })}{" "}
-            <strong style={{ color: "#c85a1e" }}>{Math.round(rawValue)}</strong>
+            <strong style={{ color: "#c85a1e" }}>{formatSensorReading(rawValue)}</strong>
           </p>
         </div>
       </div>
@@ -35,7 +43,7 @@ export default function StoryStrip({ sensorKey, wheelKey, rawValue, weight, cont
           <p className="story-label">{t("storyStepMultiply")}</p>
           <p className="story-main">
             × {t("weightWord")}{" "}
-            <strong style={{ color: signColour(weight) }}>{formatSigned(weight)}</strong>
+            <strong style={{ color: signColour(weight) }}>{formatWeightFactor(weight)}</strong>
             <span className="story-effect"> ({effect})</span>
           </p>
         </div>
@@ -50,10 +58,33 @@ export default function StoryStrip({ sensorKey, wheelKey, rawValue, weight, cont
         <div>
           <p className="story-label">{t("storyStepAdd")}</p>
           <p className="story-main">
-            {tf("storyPullShort", { wheel })}{" "}
+            {t("storyAddShort")}{" "}
             <strong style={{ color: signColour(contribution, 1) }}>
               {formatSigned(Math.round(contribution))}
             </strong>
+          </p>
+        </div>
+      </div>
+
+      <span className="story-arrow" aria-hidden="true">
+        →
+      </span>
+
+      <div className={`story-card${clamped ? " is-clamp" : ""}`}>
+        <span className="story-num">4</span>
+        <div>
+          <p className="story-label">{t("storyStepSend")}</p>
+          <p className="story-main">
+            {clamped
+              ? tf("storySendClamped", {
+                  sum: formatSigned(Math.round(sum)),
+                  wheel,
+                  speed: formatSigned(output),
+                })
+              : tf("storySendShort", {
+                  wheel,
+                  speed: formatSigned(output),
+                })}
           </p>
         </div>
       </div>

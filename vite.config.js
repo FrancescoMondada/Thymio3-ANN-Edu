@@ -7,6 +7,8 @@ const thymioApi = fileURLToPath(
 );
 
 export default defineConfig({
+  // Project Pages live under /Thymio3-ANN-Edu/; local `npm run dev` stays at `/`.
+  base: process.env.GITHUB_PAGES === "1" ? "/Thymio3-ANN-Edu/" : "/",
   plugins: [react()],
   resolve: {
     alias: { "thymio3-ts-api": thymioApi },

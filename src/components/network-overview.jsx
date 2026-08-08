@@ -1,25 +1,30 @@
 import { SENSORS, SENSOR_FULL_SCALE } from "../thymio/sensors";
-import { activityColour, formatSigned, signColour } from "../ann/palette";
+import { activityColour, formatSigned, formatSensorReading, formatWeightFactor, signColour } from "../ann/palette";
 import { crossPoints, crossRadius } from "../ann/shapes";
-import { WEIGHT_LIMIT, CONTRIBUTION_FULL_SCALE } from "../ann/network";
+import { WEIGHT_LIMIT, CONTRIBUTION_FULL_SCALE, OUTPUT_LIMIT } from "../ann/network";
 import { useI18n } from "../i18n/i18n";
 import {
+  ADD_RADIUS,
+  ADD_X,
+  ADD_Y,
   BACK_X,
   BAR_LENGTH,
   BAR_THICKNESS,
+  BODY_BOTTOM,
   BODY_PATH,
+  BODY_TOP,
   CROSS_X,
   FEATURES,
   MAP,
   SENSOR_SPOTS,
   WHEELS,
   barRotation,
-  lookVector,
+  sensorLabelAnchor,
   sensorLabelKey,
 } from "../ann/robot-layout";
 
 /**
- * One SVG: left-facing Thymio + distance bars + × column on shared Y.
+ * One SVG: left-facing Thymio + distance bars + × column + converging add (+).
  */
 function RobotAndWeights({
   network,
@@ -29,25 +34,38 @@ function RobotAndWeights({
   onSelectSensor,
 }) {
   const { t } = useI18n();
-  const { buttons, pen, studs } = FEATURES;
+  const { buttons, pen } = FEATURES;
 
   return (
     <div className="panel sensors-panel">
-      <h2 className="panel-title">
-        {t("panelSensors")} <span className="panel-sub">{t("panelProximity")}</span>
-        <span className="panel-title-right">{t("opMultiply")}</span>
-      </h2>
+      <div className="sense-header">
+        <h2 className="panel-title">
+          {t("panelSensors")} <span className="panel-sub">{t("panelProximity")}</span>
+        </h2>
+        <div className="sense-ops" aria-hidden="true">
+          <span className="sense-op" style={{ left: `${(CROSS_X / MAP.width) * 100}%` }}>
+            {t("opMultiply")}
+          </span>
+          <span className="sense-op" style={{ left: `${(ADD_X / MAP.width) * 100}%` }}>
+            {t("opAdd")}
+          </span>
+        </div>
+      </div>
 
       <svg
         className="sensor-map"
         viewBox={`0 0 ${MAP.width} ${MAP.height}`}
         role="img"
-        aria-label={t("panelSensors")}
+        aria-label={`${t("panelSensors")}, ${t("opMultiply")}, ${t("opAdd")}`}
       >
-        <ellipse cx="210" cy="348" rx="100" ry="10" fill="rgba(0,0,0,0.07)" />
-
         <path className="map-body" d={BODY_PATH} />
-        <line className="map-back-edge" x1={BACK_X} y1="86" x2={BACK_X} y2="270" />
+        <line
+          className="map-back-edge"
+          x1={BACK_X}
+          y1={BODY_TOP}
+          x2={BACK_X}
+          y2={BODY_BOTTOM}
+        />
 
         <circle className="map-buttons" cx={buttons.cx} cy={buttons.cy} r={buttons.r} />
         <circle className="map-buttons-inner" cx={buttons.cx} cy={buttons.cy} r={buttons.inner} />
@@ -69,37 +87,34 @@ function RobotAndWeights({
         <circle className="map-pen" cx={pen.cx} cy={pen.cy} r={pen.r} />
         <circle className="map-pen-hole" cx={pen.cx} cy={pen.cy} r={pen.r - 5} />
 
-        {studs.map((pad, index) => (
-          <g key={index}>
-            <rect className="map-studs" x={pad.x} y={pad.y} width={pad.w} height={pad.h} rx="3" />
-            {Array.from({ length: 12 }, (_, i) => {
-              const col = i % 4;
-              const row = Math.floor(i / 4);
-              return (
-                <circle
-                  className="map-stud"
-                  key={i}
-                  cx={pad.x + 7 + col * 9}
-                  cy={pad.y + 8 + row * 10}
-                  r="2.2"
-                />
-              );
-            })}
-          </g>
-        ))}
-
         {Object.entries(WHEELS).map(([key, wheel]) => (
-          <ellipse
+          <rect
             className="map-wheel"
             key={key}
-            cx={wheel.cx}
-            cy={wheel.cy}
-            rx={wheel.rx}
-            ry={wheel.ry}
+            x={wheel.x}
+            y={wheel.y}
+            width={wheel.w}
+            height={wheel.h}
+            rx={2}
           />
         ))}
 
-        {/* Edges + crosses first (under nodes), then bars and labels */}
+        {SENSOR_SPOTS.map((spot) => {
+          const focused = spot.key === focusSensor;
+          const c = evaluation.contributions[storyWheel][spot.key];
+          const f = Math.min(1, Math.abs(c) / CONTRIBUTION_FULL_SCALE);
+          return (
+            <path
+              key={`to-add-${spot.key}`}
+              d={`M ${CROSS_X},${spot.y} L ${ADD_X - ADD_RADIUS + 2},${ADD_Y}`}
+              fill="none"
+              opacity={focused ? 1 : 0.22}
+              stroke={focused ? signColour(c, 1) : "#9aa5b1"}
+              strokeWidth={focused ? 2.4 + 4 * Math.sqrt(f) : 1.2}
+            />
+          );
+        })}
+
         {SENSOR_SPOTS.map((spot) => {
           const focused = spot.key === focusSensor;
           const w = network.weights[storyWheel][spot.key];
@@ -120,23 +135,39 @@ function RobotAndWeights({
                 stroke="#1c2430"
                 strokeWidth={focused ? 2.5 : 1.5}
               />
+              {focused ? (
+                <text
+                  className="map-weight-value"
+                  x={CROSS_X + 18}
+                  y={spot.y - 14}
+                  style={{ fill: signColour(w) }}
+                >
+                  {`× ${formatWeightFactor(w)}`}
+                </text>
+              ) : null}
             </g>
           );
         })}
+
+        <g className="map-add-node" aria-hidden="true">
+          <circle
+            cx={ADD_X}
+            cy={ADD_Y}
+            r={ADD_RADIUS}
+            className="map-add-disk"
+          />
+          <text className="map-add-plus" x={ADD_X} y={ADD_Y + 1} textAnchor="middle" dominantBaseline="central">
+            +
+          </text>
+        </g>
 
         {SENSOR_SPOTS.map((spot) => {
           const raw = Math.round((evaluation.inputs[spot.key] ?? 0) * 1000);
           const ratio = Math.min(1, raw / SENSOR_FULL_SCALE);
           const active = spot.key === focusSensor;
-          const dir = lookVector(spot.angle);
           const fillLen = BAR_LENGTH * ratio;
           const rot = barRotation(spot.angle);
-          const labelSide = spot.angle <= 0 ? -1 : 1;
-          const midX = spot.x + dir.x * (BAR_LENGTH * 0.55);
-          const midY = spot.y + dir.y * (BAR_LENGTH * 0.55);
-          const nameX = midX;
-          const nameY = midY + labelSide * 20;
-          const valueY = nameY + labelSide * 12;
+          const label = sensorLabelAnchor(spot);
 
           return (
             <g
@@ -185,11 +216,21 @@ function RobotAndWeights({
                 style={{ fill: activityColour(ratio) }}
               />
 
-              <text className="map-sensor-name" x={nameX} y={nameY}>
+              <text
+                className="map-sensor-name"
+                x={label.nameX}
+                y={label.nameY}
+                textAnchor={label.anchor}
+              >
                 {t(sensorLabelKey(spot.key))}
               </text>
-              <text className="map-sensor-value" x={nameX} y={valueY}>
-                {raw}
+              <text
+                className="map-sensor-value"
+                x={label.valueX}
+                y={label.valueY}
+                textAnchor={label.anchor}
+              >
+                {formatSensorReading(raw)}
               </text>
             </g>
           );
@@ -199,61 +240,90 @@ function RobotAndWeights({
   );
 }
 
-function ContributionCard({ network, evaluation, focusSensor, wheelKey }) {
+/** Wheel order matching the robot drawing (right = top when facing left). */
+function wheelStack(focusWheel, storyWheel) {
+  if (focusWheel === "both") return ["right", "left"];
+  return [storyWheel];
+}
+
+/**
+ * Term list for one wheel neuron (detail under / beside the graphical +).
+ */
+function AddCard({ network, evaluation, focusSensor, wheelKey }) {
   const { t } = useI18n();
   const bias = network.bias[wheelKey];
-  const rows = [
-    { key: "bias", label: t("bias"), value: bias },
-    ...SENSORS.map((sensor) => ({
-      key: sensor.key,
-      label: t(sensorLabelKey(sensor.key)),
-      value: evaluation.contributions[wheelKey][sensor.key],
-      focused: sensor.key === focusSensor,
-    })),
-  ];
+  const total = evaluation.outputs[wheelKey];
+  // Same top→bottom order as the × column (robot right at the top when facing left).
+  const sensorTerms = [...SENSORS].reverse().map((sensor) => ({
+    key: sensor.key,
+    label: t(sensorLabelKey(sensor.key)),
+    value: evaluation.contributions[wheelKey][sensor.key],
+    focused: sensor.key === focusSensor,
+  }));
+  const terms = [{ key: "bias", label: t("bias"), value: bias, focused: false }, ...sensorTerms];
 
   return (
-    <div className="contribution-card">
-      <h2 className="panel-title">
-        {wheelKey === "left" ? t("wheelLeft") : t("wheelRight")}{" "}
-        <span className="panel-sub">{t("panelContributions")}</span>
-      </h2>
-      <ul className="contribution-list">
-        {rows.map((row) => {
-          const focused = row.key === "bias" ? false : row.focused;
-          const quiet = row.key !== "bias" && !focused && Math.abs(row.value) < 1;
+    <div className="add-card">
+      <div className="add-card-head">
+        <span className="add-plus" aria-hidden="true">
+          +
+        </span>
+        <h2 className="panel-title">
+          {wheelKey === "left" ? t("wheelLeft") : t("wheelRight")}
+        </h2>
+      </div>
+
+      <ul className="add-stack">
+        {terms.map((term) => {
+          const quiet = term.key !== "bias" && !term.focused && Math.abs(term.value) < 1;
+          const ratio = Math.min(1, Math.abs(term.value) / OUTPUT_LIMIT);
+          const positive = term.value >= 0;
           return (
             <li
-              className={`contribution-row${focused ? " is-focus" : ""}${quiet ? " is-quiet" : ""}`}
-              key={row.key}
-              style={{ color: signColour(row.value, 0.5) }}
+              className={`add-term${term.focused ? " is-focus" : ""}${quiet ? " is-quiet" : ""}`}
+              key={term.key}
             >
-              <span>{row.label}</span>
-              <span className="contribution-value">{formatSigned(Math.round(row.value))}</span>
+              <span className="add-term-label">{term.label}</span>
+              <div className="add-term-track" aria-hidden="true">
+                <div
+                  className={`add-term-bar${positive ? " is-pos" : " is-neg"}`}
+                  style={{
+                    width: `${8 + ratio * 92}%`,
+                    background: signColour(term.value, 0.5),
+                  }}
+                />
+              </div>
+              <span className="add-term-value" style={{ color: signColour(term.value, 0.5) }}>
+                {formatSigned(Math.round(term.value))}
+              </span>
             </li>
           );
         })}
       </ul>
-      <div className="contribution-total">
-        <span>{t("sumTotal")}</span>
-        <strong style={{ color: signColour(evaluation.outputs[wheelKey], 5) }}>
-          {formatSigned(evaluation.outputs[wheelKey])}
+
+      <div className="add-sum">
+        <span className="add-sum-label">{t("sumTotal")}</span>
+        <strong className="add-sum-value" style={{ color: signColour(total, 5) }}>
+          {formatSigned(total)}
         </strong>
       </div>
-      <p className="contribution-caption">{t("sumCaption")}</p>
+      <p className="add-to-motor">{t("sumToMotor")}</p>
+      <p className="add-caption">{t("sumCaption")}</p>
     </div>
   );
 }
 
 function MotorsPanel({ evaluation, focusWheel }) {
   const { t } = useI18n();
+  const keys = focusWheel === "both" ? ["right", "left"] : focusWheel === "right" ? ["right"] : ["left"];
 
   return (
     <div className="panel motors-panel">
       <h2 className="panel-title">
         {t("panelMotors")} <span className="panel-sub">{t("panelSpeed")}</span>
       </h2>
-      {["left", "right"].map((key) => {
+      <p className="motors-caption">{t("motorsCaption")}</p>
+      {keys.map((key) => {
         const active = focusWheel === "both" || focusWheel === key;
         const value = evaluation.outputs[key];
         return (
@@ -275,38 +345,41 @@ export default function NetworkOverview({
   onSelectSensor,
   mode,
   pathControl,
+  biasControl,
 }) {
   const { t } = useI18n();
   const storyWheel = focusWheel === "both" ? "left" : focusWheel;
+  const wheels = wheelStack(focusWheel, storyWheel);
 
   return (
     <div className={`network-overview mode-${mode}`}>
-      <RobotAndWeights
-        evaluation={evaluation}
-        focusSensor={focusSensor}
-        network={network}
-        onSelectSensor={onSelectSensor}
-        storyWheel={storyWheel}
-      />
+      <div className="network-sense">
+        <RobotAndWeights
+          evaluation={evaluation}
+          focusSensor={focusSensor}
+          network={network}
+          onSelectSensor={onSelectSensor}
+          storyWheel={storyWheel}
+        />
+        {mode === "tweak" ? <div className="tweak-under-sense">{pathControl}</div> : null}
+      </div>
 
-      <div className="network-side">
-        <div className="neuron-column">
-          {(focusWheel === "both" ? ["left", "right"] : [storyWheel]).map((wheel) => (
-            <ContributionCard
-              evaluation={evaluation}
-              focusSensor={focusSensor}
-              key={wheel}
-              network={network}
-              wheelKey={wheel}
-            />
-          ))}
-          <p className="op-caption">{t("opAdd")}</p>
-        </div>
+      <div className="network-add">
+        <p className="network-add-label">{t("opAdd")}</p>
+        {wheels.map((wheel) => (
+          <AddCard
+            evaluation={evaluation}
+            focusSensor={focusSensor}
+            key={wheel}
+            network={network}
+            wheelKey={wheel}
+          />
+        ))}
+        {mode === "tweak" ? <div className="tweak-under-add">{biasControl}</div> : null}
+      </div>
 
-        <div className="network-right">
-          <MotorsPanel evaluation={evaluation} focusWheel={focusWheel} />
-          {mode === "tweak" ? pathControl : null}
-        </div>
+      <div className="network-motors">
+        <MotorsPanel evaluation={evaluation} focusWheel={focusWheel} />
       </div>
     </div>
   );

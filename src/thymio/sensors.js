@@ -5,15 +5,15 @@
  * robot is heading and only crowded the figure.
  *
  * `angle` is where the sensor looks, in degrees, with 0 straight ahead and
- * positive to the right. The figure is laid out from these angles, so the fan
- * of bars matches how the sensors sit on the robot.
+ * positive to the right. Outer sensors sit near ±75° so the fan matches the
+ * real Thymio front arcs; the figure is laid out from these angles.
  */
 export const SENSORS = [
-  { key: "left", label: "left", angle: -40 },
-  { key: "frontLeft", label: "left-c", angle: -20 },
+  { key: "left", label: "left", angle: -75 },
+  { key: "frontLeft", label: "left-c", angle: -37 },
   { key: "center", label: "center", angle: 0 },
-  { key: "frontRight", label: "right-c", angle: 20 },
-  { key: "right", label: "right", angle: 40 },
+  { key: "frontRight", label: "right-c", angle: 37 },
+  { key: "right", label: "right", angle: 75 },
 ];
 
 export const SENSOR_KEYS = SENSORS.map((sensor) => sensor.key);

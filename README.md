@@ -2,27 +2,32 @@
 
 Gamified classroom interface for a small neural network on a Thymio 3.
 
-**See** shows the network overview: proximity bars and a mini robot on the left,
-multiplication signs on every connection, a contribution list (add) for the
-focused wheel, and motor speeds on the right. The story strip under the figure
-is three beats only — Sense → Multiply → Add — so the mechanism stays readable.
-Activation/clamp is applied but not drawn as its own step.
+**See** shows the network: proximity bars on a left-facing Thymio, multiply (×)
+weights, a neuron that **adds**, then motor speeds. The story strip is four beats —
+Sense → Multiply → Add (in the neuron) → Send (to motor speed).
 
-**Tweak** keeps that overview and adds a pull/push control for the focused path.
+**Tweak** adds pull/push weight controls under the sensors and bias under Add.
+Presets (default **Avoid**) sit in the control bar; editing weights switches to
+**Custom**.
 
 Languages: **English, French, German, Italian**.
 
-The expert diagram with twelve sliders lives in the sibling project
-[Thymio3-ANN](../Thymio3-ANN).
+The expert diagram with twelve sliders lives in
+[Thymio3-ANN](https://github.com/FrancescoMondada/Thymio3-ANN).
+
+## Demo
+
+Live page (simulated sensors work in any browser; connecting a robot needs
+Chrome or Edge over HTTPS):
+
+https://francescomondada.github.io/Thymio3-ANN-Edu/
 
 ## Demo loop
 
 1. **See** — watch a sensor light up (simulated obstacle, or a real object in
-   front of a connected robot). The story strip walks Sense → Multiply → Add →
-   Decide for the focused path.
-2. **Tweak** — adjust that path with a coarse pull / push control.
-3. Tap a sensor hotspot to lock focus; otherwise focus follows the brightest
-   reading.
+   front of a connected robot). Follow Sense → Multiply → Add → Send.
+2. **Tweak** — adjust the focused path and bias; try a preset.
+3. Tap a sensor to lock focus, or use **Follow brightest**.
 
 ## Requirements
 
@@ -37,10 +42,10 @@ npm run setup:api
 npm run dev
 ```
 
-Open http://localhost:5182 .
+Open http://127.0.0.1:5182 .
 
 `setup:api` clones and builds [thymio3-ts-api](https://github.com/Mobsya/thymio3-ts-api)
-into `vendor/` (gitignored).
+into `vendor/` (gitignored), applying optional Edu overlays for the motor path.
 
 ## Network
 

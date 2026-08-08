@@ -3,8 +3,6 @@ import * as thymio from "thymio3-ts-api";
 /** What the robot itself accepts. The network clamps to a lower value. */
 export const MOTOR_HARDWARE_LIMIT = 1000;
 
-// setActuatorState rewrites every actuator at once, so changing the motors means
-// sending a complete state. Everything else is held at rest.
 const NEUTRAL_STATE = {
   circleLEDs: Array(8).fill(0),
   frontLegoLEDs: Array(8).fill(0),
@@ -28,13 +26,23 @@ export function clampSpeed(value) {
   return Math.min(MOTOR_HARDWARE_LIMIT, Math.max(-MOTOR_HARDWARE_LIMIT, speed));
 }
 
+async function sendMotors(left, right) {
+  if (typeof thymio.setMotorSpeeds === "function") {
+    return thymio.setMotorSpeeds(left, right);
+  }
+  await thymio.setActuatorState({
+    ...NEUTRAL_STATE,
+    motorLeft: left,
+    motorRight: right,
+  });
+  return "with-response";
+}
+
 /**
- * Serialises motor writes onto the Bluetooth link. The network produces a new
- * pair of speeds on every sensor frame, which is faster than the link can
- * carry, so intermediate targets are dropped and only the most recent one is
- * sent once the previous write resolves.
+ * Coalescing motor writer. Intermediate targets are dropped; only the latest
+ * speeds are sent once the previous BLE write finishes.
  */
-export function createMotorWriter({ onError } = {}) {
+export function createMotorWriter({ onError, onSent, onMode } = {}) {
   let target = { left: 0, right: 0 };
   let written = null;
   let draining = null;
@@ -42,12 +50,11 @@ export function createMotorWriter({ onError } = {}) {
   async function sendUntilSettled() {
     while (!written || written.left !== target.left || written.right !== target.right) {
       const next = target;
-      await thymio.setActuatorState({
-        ...NEUTRAL_STATE,
-        motorLeft: next.left,
-        motorRight: next.right,
-      });
+      // Snapshot target at send start; if it changes while in flight, loop again.
+      const mode = await sendMotors(next.left, next.right);
+      onMode?.(mode);
       written = next;
+      onSent?.();
     }
   }
 
@@ -55,13 +62,15 @@ export function createMotorWriter({ onError } = {}) {
     if (!draining) {
       draining = sendUntilSettled()
         .catch((error) => {
-          // Forget what was written so the next attempt resends the current
-          // target rather than assuming the robot is in sync.
           written = null;
           onError?.(error);
         })
         .finally(() => {
           draining = null;
+          // If a write arrived while we were finishing, drain again.
+          if (!written || written.left !== target.left || written.right !== target.right) {
+            void drain();
+          }
         });
     }
     return draining;
@@ -73,13 +82,22 @@ export function createMotorWriter({ onError } = {}) {
       void drain();
     },
 
-    /** Sends zero speed and resolves once the robot has acknowledged it. */
     async stop() {
       target = { left: 0, right: 0 };
-      await drain();
+      try {
+        // Wait for any in-flight motor write, then authoritative full stop.
+        if (draining) await draining.catch(() => {});
+        await thymio.setActuatorState({ ...NEUTRAL_STATE });
+        written = target;
+        onSent?.();
+        onMode?.("with-response");
+      } catch (error) {
+        written = null;
+        onError?.(error);
+        throw error;
+      }
     },
 
-    /** Drops all state after a disconnect, when writing is no longer possible. */
     forget() {
       target = { left: 0, right: 0 };
       written = null;

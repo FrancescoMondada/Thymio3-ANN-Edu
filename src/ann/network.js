@@ -191,3 +191,28 @@ export function saveNetwork(network) {
     // Private browsing or a full quota: the network just will not be restored.
   }
 }
+
+/** Return the preset key if `network` matches a built-in preset, else "". */
+export function matchPresetKey(network) {
+  if (!network?.weights?.left || !network?.bias) return "";
+  for (const preset of PRESETS) {
+    const built = preset.build();
+    if (built.activation !== network.activation) continue;
+    let same = true;
+    for (const output of OUTPUTS) {
+      if (Math.round(built.bias[output.key]) !== Math.round(network.bias[output.key] || 0)) {
+        same = false;
+        break;
+      }
+      for (const key of SENSOR_KEYS) {
+        if (Math.round(built.weights[output.key][key]) !== Math.round(network.weights[output.key][key] || 0)) {
+          same = false;
+          break;
+        }
+      }
+      if (!same) break;
+    }
+    if (same) return preset.key;
+  }
+  return "";
+}

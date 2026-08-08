@@ -50,3 +50,21 @@ export function formatSigned(value) {
   const rounded = Math.round(value);
   return rounded > 0 ? `+${rounded}` : `${rounded}`;
 }
+
+/**
+ * Classroom display scales so kids can multiply by hand:
+ *   (sensor / 100) × (weight / 10) = sensor × weight / 1000
+ * which matches the real network (inputs are raw / 1000).
+ */
+export function formatSensorReading(raw) {
+  return (Number(raw) / 100).toFixed(1);
+}
+
+export function formatWeightFactor(weight) {
+  const v = Number(weight) / 10;
+  const text = Math.abs(v).toFixed(1);
+  if (v > 0) return `+${text}`;
+  if (v < 0) return `-${text}`;
+  return text;
+}
+

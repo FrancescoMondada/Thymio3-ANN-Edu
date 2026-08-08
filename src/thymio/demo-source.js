@@ -12,7 +12,7 @@ const BREATH_SECONDS = 5.3;
 
 // Only the front sensors are shown, so the obstacle stays in front of the robot
 // instead of circling it and leaving the figure idle half the time.
-const SWEEP_DEGREES = 70;
+const SWEEP_DEGREES = 85;
 
 function angleDifference(a, b) {
   return Math.abs(((a - b + 540) % 360) - 180);

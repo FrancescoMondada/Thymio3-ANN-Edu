@@ -8,7 +8,7 @@ export default function ConnectionCard({
   onConnect,
   onDisconnect,
 }) {
-  const { t } = useI18n();
+  const { t, locale, locales, setLocale } = useI18n();
   const isConnected = status === "connected";
   const isBusy = status === "connecting" || status === "reconnecting";
 
@@ -21,25 +21,47 @@ export default function ConnectionCard({
 
   return (
     <header className="connection-card">
-      <div className="connection-identity">
-        <h1>{t("title")}</h1>
-        <div className={`status-pill status-${status}`}>
-          <span className="status-dot" />
-          {statusText}
-          {isConnected && deviceName ? <span className="device-name">{deviceName}</span> : null}
+      <div className="connection-bar">
+        <div className="connection-identity">
+          <h1>{t("title")}</h1>
+          <div className={`status-pill status-${status}`}>
+            <span className="status-dot" />
+            {statusText}
+            {isConnected && deviceName ? <span className="device-name">{deviceName}</span> : null}
+          </div>
         </div>
-      </div>
 
-      <div className="connection-actions">
-        {isConnected ? (
-          <button className="button secondary" onClick={onDisconnect} type="button">
-            {t("disconnect")}
-          </button>
-        ) : (
-          <button className="button primary" disabled={isBusy} onClick={onConnect} type="button">
-            {isBusy ? t("connecting") : t("connect")}
-          </button>
-        )}
+        <div className="connection-locale">
+          <div className="segmented compact" role="group" aria-label="Language">
+            {locales.map((item) => (
+              <button
+                aria-pressed={locale === item.key}
+                className={locale === item.key ? "is-active" : ""}
+                key={item.key}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setLocale(item.key);
+                }}
+                type="button"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="connection-actions">
+          {isConnected ? (
+            <button className="button secondary" onClick={onDisconnect} type="button">
+              {t("disconnect")}
+            </button>
+          ) : (
+            <button className="button primary" disabled={isBusy} onClick={onConnect} type="button">
+              {isBusy ? t("connecting") : t("connect")}
+            </button>
+          )}
+        </div>
       </div>
 
       {needsManualReconnect ? <p className="notice warning">{t("reconnectHint")}</p> : null}
