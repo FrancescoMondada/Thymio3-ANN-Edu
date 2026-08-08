@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as thymio from "thymio3-ts-api";
 import ConnectionCard from "./components/connection-card";
 import EduChrome from "./components/edu-chrome";
+import NetworkOverview from "./components/network-overview";
 import PathControl from "./components/path-control";
-import RobotStage from "./components/robot-stage";
 import StoryStrip from "./components/story-strip";
 import { useI18n } from "./i18n/i18n";
 import { WEIGHT_LIMIT, clamp, evaluate, loadNetwork, presetByKey, saveNetwork } from "./ann/network";
@@ -50,6 +50,7 @@ export default function App() {
   }
 
   const isConnected = status === "connected";
+  const storyWheel = focusWheel === "both" ? "left" : focusWheel;
 
   useEffect(() => {
     const onConnected = (event) => {
@@ -118,7 +119,6 @@ export default function App() {
     saveNetwork(network);
   }, [network]);
 
-  // Follow the brightest sensor unless the child tapped one recently.
   useEffect(() => {
     if (manualSensor) return;
     setFocusSensor((current) => autoFocusSensor(sensorValues, current));
@@ -175,13 +175,14 @@ export default function App() {
   const changeWeight = useCallback(
     (value) => {
       const next = clamp(Math.round(value), WEIGHT_LIMIT);
-      setNetwork((current) => ({
-        ...current,
-        weights: {
-          ...current.weights,
-          [focusWheel]: { ...current.weights[focusWheel], [focusSensor]: next },
-        },
-      }));
+      const wheels = focusWheel === "both" ? ["left", "right"] : [focusWheel];
+      setNetwork((current) => {
+        const weights = { ...current.weights };
+        for (const wheel of wheels) {
+          weights[wheel] = { ...weights[wheel], [focusSensor]: next };
+        }
+        return { ...current, weights };
+      });
     },
     [focusSensor, focusWheel],
   );
@@ -191,8 +192,8 @@ export default function App() {
     setManualSensor(true);
   }, []);
 
-  const weight = network.weights[focusWheel][focusSensor];
-  const contribution = evaluation.contributions[focusWheel][focusSensor];
+  const weight = network.weights[storyWheel][focusSensor];
+  const contribution = evaluation.contributions[storyWheel][focusSensor];
   const rawValue = (evaluation.inputs[focusSensor] ?? 0) * 1000;
 
   return (
@@ -206,7 +207,12 @@ export default function App() {
         status={status}
       />
 
-      {BLUETOOTH_SUPPORTED ? null : <p className="notice warning">{t("noBluetooth")}</p>}
+      {BLUETOOTH_SUPPORTED ? null : (
+        <div className="notice warning notice-bluetooth" role="alert">
+          <strong className="notice-title">{t("noBluetoothTitle")}</strong>
+          <p>{t("noBluetooth")}</p>
+        </div>
+      )}
 
       <EduChrome
         driving={driving}
@@ -228,40 +234,30 @@ export default function App() {
       <p className="tip">{t("tipObstacle")}</p>
 
       <main className="stage-panel">
-        <div className="stage-frame">
-          <RobotStage
-            evaluation={evaluation}
-            focusSensor={focusSensor}
-            focusWheel={focusWheel}
-            network={network}
-            onSelectSensor={selectSensor}
-          />
-          <img
-            alt="Thymio 3"
-            className="robot-photo"
-            src="/T3-rendering.jpg"
-          />
-        </div>
-
-        <aside className="side-panel">
-          <StoryStrip
-            contribution={contribution}
-            rawValue={rawValue}
-            sensorKey={focusSensor}
-            speed={evaluation.outputs[focusWheel]}
-            weight={weight}
-            wheelKey={focusWheel}
-          />
-
-          {mode === "tweak" ? (
+        <NetworkOverview
+          evaluation={evaluation}
+          focusSensor={focusSensor}
+          focusWheel={focusWheel}
+          mode={mode}
+          network={network}
+          onSelectSensor={selectSensor}
+          pathControl={
             <PathControl
               onChange={changeWeight}
               sensorKey={focusSensor}
               weight={weight}
-              wheelKey={focusWheel}
+              wheelKey={storyWheel}
             />
-          ) : null}
-        </aside>
+          }
+        />
+
+        <StoryStrip
+          contribution={contribution}
+          rawValue={rawValue}
+          sensorKey={focusSensor}
+          weight={weight}
+          wheelKey={storyWheel}
+        />
       </main>
     </div>
   );

@@ -54,6 +54,13 @@ export default function EduChrome({
           >
             {t("wheelRight")}
           </button>
+          <button
+            className={focusWheel === "both" ? "is-active" : ""}
+            onClick={() => onWheel("both")}
+            type="button"
+          >
+            {t("wheelBoth")}
+          </button>
         </div>
       </div>
 
