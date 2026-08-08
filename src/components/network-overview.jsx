@@ -208,10 +208,10 @@ export default function NetworkOverview({
                   strokeWidth={focused ? 2.2 + 4.5 * Math.sqrt(f) : 1.4}
                 />
                 <polygon
-                  points={crossPoints(110, y, focused ? crossRadius(m) : 7)}
-                  style={{ fill: focused ? signColour(w) : "#c5ccd3" }}
+                  points={crossPoints(110, y, focused ? Math.max(12, crossRadius(m) * 1.35) : 9)}
+                  style={{ fill: focused ? signColour(w) : "#d0d5db" }}
                   stroke="#1c2430"
-                  strokeWidth={focused ? 2.2 : 1.2}
+                  strokeWidth={focused ? 2.5 : 1.5}
                 />
               </g>
             );

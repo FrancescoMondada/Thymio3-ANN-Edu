@@ -1,13 +1,19 @@
 # Thymio 3 ANN Edu
 
-Gamified classroom interface for a small neural network on a Thymio 3. The robot
-body is the stage: five proximity sensors are hotspots, one path at a time is
-explained in kid language, and the ANN is drawn inside the robot.
+Gamified classroom interface for a small neural network on a Thymio 3.
+
+**See** shows the network overview: proximity bars and a mini robot on the left,
+multiplication signs on every connection, a contribution list (add) for the
+focused wheel, and motor speeds on the right. The story strip under the figure
+is three beats only — Sense → Multiply → Add — so the mechanism stays readable.
+Activation/clamp is applied but not drawn as its own step.
+
+**Tweak** keeps that overview and adds a pull/push control for the focused path.
 
 Languages: **English, French, German, Italian**.
 
 The expert diagram with twelve sliders lives in the sibling project
-[Thymio3-ANN](../Thymio3-ANN). This app is the education-focused product.
+[Thymio3-ANN](../Thymio3-ANN).
 
 ## Demo loop
 
