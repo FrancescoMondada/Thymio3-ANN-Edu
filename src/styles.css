@@ -270,10 +270,37 @@ input {
 
 .network-overview {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(280px, 1.2fr) minmax(200px, 0.7fr);
+  grid-template-columns: minmax(360px, 1.4fr) minmax(280px, 1fr);
   gap: 16px;
   align-items: stretch;
   min-height: 420px;
+}
+
+.network-side {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.panel-title {
+  margin: 0 0 12px;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.panel-title-right {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .panel {
@@ -316,15 +343,49 @@ input {
   stroke-width: 3;
 }
 
-.map-front-edge {
+.map-back-edge {
   stroke: var(--ink);
   stroke-width: 5;
   stroke-linecap: square;
 }
 
-.map-window {
-  fill: #2a323c;
+.map-button-dot {
+  fill: #c5ced4;
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+.map-pen-hole {
+  fill: #1c2430;
+}
+
+.map-stud {
+  fill: #cfd6db;
   stroke: none;
+}
+
+.map-align {
+  stroke: #c5ccd3;
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  opacity: 0.35;
+}
+
+.map-align.is-active {
+  stroke: var(--accent-strong);
+  opacity: 0.7;
+  stroke-dasharray: none;
+}
+
+.panel-title-align {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.sensors-panel .sensor-map {
+  align-self: start;
 }
 
 .map-studs {
@@ -406,18 +467,10 @@ input {
   pointer-events: none;
 }
 
-.network-mid {
-  display: grid;
-  grid-template-columns: 1fr 1.15fr;
-  gap: 8px;
-  align-items: stretch;
-  min-width: 0;
-}
-
 .network-edges {
   width: 100%;
-  height: 100%;
-  min-height: 340px;
+  height: auto;
+  display: block;
 }
 
 .edge-caption {

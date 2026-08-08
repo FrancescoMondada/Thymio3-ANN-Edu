@@ -4,28 +4,38 @@ import { crossPoints, crossRadius } from "../ann/shapes";
 import { WEIGHT_LIMIT, CONTRIBUTION_FULL_SCALE } from "../ann/network";
 import { useI18n } from "../i18n/i18n";
 import {
+  BACK_X,
   BAR_LENGTH,
   BAR_THICKNESS,
   BODY_PATH,
-  FRONT_WINDOWS,
+  CROSS_X,
+  FEATURES,
   MAP,
   SENSOR_SPOTS,
   WHEELS,
+  barRotation,
   lookVector,
   sensorLabelKey,
 } from "../ann/robot-layout";
 
 /**
- * Top-down Thymio with distance bars pointing the way each sensor looks.
- * Flat front at the top, round back at the bottom — like the real robot.
+ * One SVG: left-facing Thymio + distance bars + × column on shared Y.
  */
-function SensorMap({ evaluation, focusSensor, onSelectSensor }) {
+function RobotAndWeights({
+  network,
+  evaluation,
+  focusSensor,
+  storyWheel,
+  onSelectSensor,
+}) {
   const { t } = useI18n();
+  const { buttons, pen, studs } = FEATURES;
 
   return (
     <div className="panel sensors-panel">
       <h2 className="panel-title">
         {t("panelSensors")} <span className="panel-sub">{t("panelProximity")}</span>
+        <span className="panel-title-right">{t("opMultiply")}</span>
       </h2>
 
       <svg
@@ -34,31 +44,49 @@ function SensorMap({ evaluation, focusSensor, onSelectSensor }) {
         role="img"
         aria-label={t("panelSensors")}
       >
-        {/* Soft shadow of the D-body */}
-        <ellipse cx="150" cy="372" rx="88" ry="12" fill="rgba(0,0,0,0.08)" />
+        <ellipse cx="210" cy="348" rx="100" ry="10" fill="rgba(0,0,0,0.07)" />
 
         <path className="map-body" d={BODY_PATH} />
-        {/* Emphasise the flat front edge of the D-shape. */}
-        <line className="map-front-edge" x1="58" y1="118" x2="242" y2="118" />
+        <line className="map-back-edge" x1={BACK_X} y1="86" x2={BACK_X} y2="270" />
 
-        {FRONT_WINDOWS.map((win, index) => (
-          <rect
-            className="map-window"
+        <circle className="map-buttons" cx={buttons.cx} cy={buttons.cy} r={buttons.r} />
+        <circle className="map-buttons-inner" cx={buttons.cx} cy={buttons.cy} r={buttons.inner} />
+        {[
+          [0, -1],
+          [1, 0],
+          [0, 1],
+          [-1, 0],
+        ].map(([dx, dy], index) => (
+          <circle
+            className="map-button-dot"
             key={index}
-            x={win.x}
-            y={win.y}
-            width={win.w}
-            height={win.h}
-            rx="2"
+            cx={buttons.cx + dx * 18}
+            cy={buttons.cy + dy * 18}
+            r="4"
           />
         ))}
 
-        {/* LEGO stud hint + pen hole + button ring — iconic flat-front Thymio */}
-        <rect className="map-studs" x="78" y="190" width="52" height="48" rx="4" />
-        <rect className="map-studs" x="170" y="190" width="52" height="48" rx="4" />
-        <circle className="map-pen" cx="150" cy="168" r="10" />
-        <circle className="map-buttons" cx="150" cy="278" r="28" />
-        <circle className="map-buttons-inner" cx="150" cy="278" r="8" />
+        <circle className="map-pen" cx={pen.cx} cy={pen.cy} r={pen.r} />
+        <circle className="map-pen-hole" cx={pen.cx} cy={pen.cy} r={pen.r - 5} />
+
+        {studs.map((pad, index) => (
+          <g key={index}>
+            <rect className="map-studs" x={pad.x} y={pad.y} width={pad.w} height={pad.h} rx="3" />
+            {Array.from({ length: 12 }, (_, i) => {
+              const col = i % 4;
+              const row = Math.floor(i / 4);
+              return (
+                <circle
+                  className="map-stud"
+                  key={i}
+                  cx={pad.x + 7 + col * 9}
+                  cy={pad.y + 8 + row * 10}
+                  r="2.2"
+                />
+              );
+            })}
+          </g>
+        ))}
 
         {Object.entries(WHEELS).map(([key, wheel]) => (
           <ellipse
@@ -71,23 +99,44 @@ function SensorMap({ evaluation, focusSensor, onSelectSensor }) {
           />
         ))}
 
+        {/* Edges + crosses first (under nodes), then bars and labels */}
+        {SENSOR_SPOTS.map((spot) => {
+          const focused = spot.key === focusSensor;
+          const w = network.weights[storyWheel][spot.key];
+          const c = evaluation.contributions[storyWheel][spot.key];
+          const m = Math.min(1, Math.abs(w) / WEIGHT_LIMIT);
+          const f = Math.min(1, Math.abs(c) / CONTRIBUTION_FULL_SCALE);
+          return (
+            <g key={`edge-${spot.key}`} opacity={focused ? 1 : 0.25}>
+              <path
+                d={`M ${spot.x},${spot.y} L ${CROSS_X},${spot.y}`}
+                fill="none"
+                stroke={focused ? signColour(c, 1) : "#9aa5b1"}
+                strokeWidth={focused ? 2.4 + 4 * Math.sqrt(f) : 1.3}
+              />
+              <polygon
+                points={crossPoints(CROSS_X, spot.y, focused ? Math.max(12, crossRadius(m) * 1.35) : 9)}
+                style={{ fill: focused ? signColour(w) : "#d0d5db" }}
+                stroke="#1c2430"
+                strokeWidth={focused ? 2.5 : 1.5}
+              />
+            </g>
+          );
+        })}
+
         {SENSOR_SPOTS.map((spot) => {
           const raw = Math.round((evaluation.inputs[spot.key] ?? 0) * 1000);
           const ratio = Math.min(1, raw / SENSOR_FULL_SCALE);
           const active = spot.key === focusSensor;
           const dir = lookVector(spot.angle);
           const fillLen = BAR_LENGTH * ratio;
-          // Local bar coords: along +x in a rotated frame, then rotate by angle.
-          // In look-space, +length is outward; SVG rotate uses degrees clockwise from +x,
-          // while our angle is from forward (−y). Convert: svgRot = angle - 90.
-          const svgRot = spot.angle - 90;
-          const labelOffset = 14 + BAR_THICKNESS / 2;
-          const labelX = spot.x + dir.x * (BAR_LENGTH * 0.55) - dir.y * labelOffset * (spot.labelSide === "right" ? -1 : 1);
-          const labelY = spot.y + dir.y * (BAR_LENGTH * 0.55) + dir.x * labelOffset * (spot.labelSide === "right" ? -1 : 1);
-          const nameY = spot.labelSide === "above" ? spot.y - BAR_LENGTH - 8 : labelY - 6;
-          const valueY = spot.labelSide === "above" ? spot.y - BAR_LENGTH + 8 : labelY + 10;
-          const nameX = spot.labelSide === "above" ? spot.x : labelX;
-          const valueX = nameX;
+          const rot = barRotation(spot.angle);
+          const labelSide = spot.angle <= 0 ? -1 : 1;
+          const midX = spot.x + dir.x * (BAR_LENGTH * 0.55);
+          const midY = spot.y + dir.y * (BAR_LENGTH * 0.55);
+          const nameX = midX;
+          const nameY = midY + labelSide * 20;
+          const valueY = nameY + labelSide * 12;
 
           return (
             <g
@@ -100,7 +149,7 @@ function SensorMap({ evaluation, focusSensor, onSelectSensor }) {
                 if (event.key === "Enter" || event.key === " ") onSelectSensor(spot.key);
               }}
             >
-              <g transform={`translate(${spot.x} ${spot.y}) rotate(${svgRot})`}>
+              <g transform={`translate(${spot.x} ${spot.y}) rotate(${rot})`}>
                 <rect
                   className="map-bar-plate"
                   x={0}
@@ -139,7 +188,7 @@ function SensorMap({ evaluation, focusSensor, onSelectSensor }) {
               <text className="map-sensor-name" x={nameX} y={nameY}>
                 {t(sensorLabelKey(spot.key))}
               </text>
-              <text className="map-sensor-value" x={valueX} y={valueY}>
+              <text className="map-sensor-value" x={nameX} y={valueY}>
                 {raw}
               </text>
             </g>
@@ -218,9 +267,6 @@ function MotorsPanel({ evaluation, focusWheel }) {
   );
 }
 
-/**
- * SEE overview: sensors map → × on the focused path → sum into the focused wheel → motors.
- */
 export default function NetworkOverview({
   network,
   evaluation,
@@ -235,43 +281,15 @@ export default function NetworkOverview({
 
   return (
     <div className={`network-overview mode-${mode}`}>
-      <SensorMap
+      <RobotAndWeights
         evaluation={evaluation}
         focusSensor={focusSensor}
+        network={network}
         onSelectSensor={onSelectSensor}
+        storyWheel={storyWheel}
       />
 
-      <div className="network-mid">
-        <svg className="network-edges" viewBox="0 0 220 360" preserveAspectRatio="xMidYMid meet">
-          <text x="110" y="18" textAnchor="middle" className="edge-caption">
-            {t("opMultiply")}
-          </text>
-          {SENSORS.map((sensor, index) => {
-            const y = 48 + index * 58;
-            const focused = sensor.key === focusSensor;
-            const w = network.weights[storyWheel][sensor.key];
-            const c = evaluation.contributions[storyWheel][sensor.key];
-            const m = Math.min(1, Math.abs(w) / WEIGHT_LIMIT);
-            const f = Math.min(1, Math.abs(c) / CONTRIBUTION_FULL_SCALE);
-            return (
-              <g key={sensor.key} opacity={focused ? 1 : 0.28}>
-                <path
-                  d={`M 8,${y} C 70,${y} 130,${y} 212,180`}
-                  fill="none"
-                  stroke={focused ? signColour(c, 1) : "#9aa5b1"}
-                  strokeWidth={focused ? 2.2 + 4.5 * Math.sqrt(f) : 1.4}
-                />
-                <polygon
-                  points={crossPoints(110, y, focused ? Math.max(12, crossRadius(m) * 1.35) : 9)}
-                  style={{ fill: focused ? signColour(w) : "#d0d5db" }}
-                  stroke="#1c2430"
-                  strokeWidth={focused ? 2.5 : 1.5}
-                />
-              </g>
-            );
-          })}
-        </svg>
-
+      <div className="network-side">
         <div className="neuron-column">
           {(focusWheel === "both" ? ["left", "right"] : [storyWheel]).map((wheel) => (
             <ContributionCard
@@ -284,11 +302,11 @@ export default function NetworkOverview({
           ))}
           <p className="op-caption">{t("opAdd")}</p>
         </div>
-      </div>
 
-      <div className="network-right">
-        <MotorsPanel evaluation={evaluation} focusWheel={focusWheel} />
-        {mode === "tweak" ? pathControl : null}
+        <div className="network-right">
+          <MotorsPanel evaluation={evaluation} focusWheel={focusWheel} />
+          {mode === "tweak" ? pathControl : null}
+        </div>
       </div>
     </div>
   );
