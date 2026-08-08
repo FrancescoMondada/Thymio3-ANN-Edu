@@ -65,3 +65,8 @@ wheel = activation( bias + Σ weight(sensor) × sensor / 1000 )
 
 Weights are stored under `thymio3-ann-edu.network.v1` so they do not clash with
 the expert app.
+
+## License
+
+The teacher class plan and figures in [`docs/`](docs/) are released under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).

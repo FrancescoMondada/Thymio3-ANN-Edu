@@ -241,7 +241,10 @@ Accept answers like: *“numbers that mix sensor readings into motor speeds.”*
 - **Younger / shorter:** stop after Sense → Multiply → one preset (Avoid). Skip bias.
 - **Older / STEM:** show the formula  
   `wheel ≈ bias + Σ (weight × sensor/1000)`  
-  and link to the expert app: [Thymio3-ANN](https://github.com/FrancescoMondada/Thymio3-ANN).
+  and link to the expert app: [Thymio3-ANN](https://github.com/FrancescoMondada/Thymio3-ANN).  
+  Also introduce the word **parameters**: in larger AI systems (including large language models), the tunable numbers — weights and biases — are usually called *parameters*.  
+  **Count the parameters here:** 10 synaptic weights + 2 biases = **12 parameters**.  
+  **Compare with an LLM:** a classroom-scale LLM may have on the order of **billions** of parameters (for example ~7–70 billion in open models often discussed in STEM classes; frontier models are larger still). Same idea — multiply, add, send — but many more numbers. Ask: *“What becomes possible when you have twelve parameters vs billions?”*
 - **Language:** UI is EN/FR/DE/IT — match the class language in the top bar.
 
 ---
@@ -260,8 +263,6 @@ Accept answers like: *“numbers that mix sensor readings into motor speeds.”*
 
 | Pupil says | Teacher redirect |
 |------------|------------------|
-| “The × is the motor.” | × is multiply (weight); motors are on the right. |
-| “Add means the robot adds distance.” | Add means the **neuron sums** contributions. |
 | “Avoid is a special mode of the robot.” | Avoid is a **set of weights** in the same network. |
 | “We trained it.” | We **hand-tuned** (or loaded a preset). Training would update weights automatically. |
 
@@ -273,6 +274,7 @@ Accept answers like: *“numbers that mix sensor readings into motor speeds.”*
 - Compare Avoid vs Follow in a table: same sensors, opposite “policy.”
 - Open the expert interface and show all twelve weights at once.
 - With coding classes: relate to `output = f(Wx + b)`.
+- Parameter hunt: list all 12 parameters on paper, then look up how many parameters a named LLM has.
 
 ---
 
@@ -286,6 +288,9 @@ Accept answers like: *“numbers that mix sensor readings into motor speeds.”*
 
 ---
 
-## Licence note
+## License
 
-This class plan is part of the Thymio3-ANN-Edu project and may be copied and adapted for teaching.
+This class plan (including the network structure figure) is released under
+[Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/).
+
+You are free to **share** and **adapt** the material for any purpose, including teaching, as long as you give appropriate credit to the Thymio3-ANN-Edu project.
