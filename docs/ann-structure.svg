@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 420" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" role="img" aria-labelledby="title desc">
   <title id="title">Thymio ANN structure</title>
   <desc id="desc">
-    Five proximity sensors connect through ten synaptic weights plus two biases
-    into two adder neurons; each neuron sends a speed to one wheel.
+    Five sensors feed five left-wheel weights on top and five right-wheel weights
+    below. Each group plus its bias converges to one neuron, then one wheel.
   </desc>
 
   <style>
@@ -12,124 +12,133 @@
     .bias { fill: #eef4ff; }
     .neuron { fill: #d8eef3; }
     .motor { fill: #fdecec; }
-    .line { fill: none; stroke: #8b8f99; stroke-width: 1.6; }
-    .line-strong { fill: none; stroke: #3a5ea8; stroke-width: 2.2; }
-    .label { font-family: Nunito, Source Sans 3, system-ui, sans-serif; fill: #1c2430; }
-    .title { font-size: 15px; font-weight: 800; }
-    .small { font-size: 12px; font-weight: 700; }
-    .tiny { font-size: 11px; font-weight: 600; fill: #5c6570; }
-    .symbol { font-size: 22px; font-weight: 800; text-anchor: middle; dominant-baseline: central; }
-    .count { font-size: 12px; font-weight: 800; fill: #c85a1e; }
+    .line { fill: none; stroke: #8b93a0; stroke-width: 1.5; }
+    .line-L { fill: none; stroke: #3a5ea8; stroke-width: 1.8; }
+    .line-R { fill: none; stroke: #c85a1e; stroke-width: 1.8; }
+    .label { font-family: Arial, Helvetica, sans-serif; fill: #1c2430; }
+    .title { font-size: 15px; font-weight: 700; }
+    .small { font-size: 13px; font-weight: 700; }
+    .tiny { font-size: 12px; font-weight: 600; fill: #5c6570; }
+    .sym { font-family: Arial, Helvetica, sans-serif; font-size: 18px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
   </style>
 
-  <!-- Column captions -->
-  <text class="label title" x="70" y="28">5 sensors</text>
-  <text class="label title" x="300" y="28">10 synaptic weights</text>
-  <text class="label title" x="520" y="28">2 biases</text>
-  <text class="label title" x="680" y="28">2 neurons (+)</text>
-  <text class="label title" x="820" y="28">2 wheels</text>
+  <!-- Path bands -->
+  <rect x="210" y="48" width="770" height="270" rx="16" fill="#eef4fb"/>
+  <rect x="210" y="334" width="770" height="270" rx="16" fill="#fbf1e8"/>
+  <text class="label tiny" x="226" y="70">LEFT wheel path</text>
+  <text class="label tiny" x="226" y="356">RIGHT wheel path</text>
 
-  <!-- Sensor nodes -->
+  <!-- Headers -->
+  <text class="label title" x="48" y="30">5 sensors</text>
+  <text class="label title" x="280" y="30">synaptic weights (x)</text>
+  <text class="label title" x="500" y="30">bias</text>
+  <text class="label title" x="640" y="30">neuron (+)</text>
+  <text class="label title" x="800" y="30">wheel</text>
+
+  <!-- Sensors: evenly spaced full height -->
   <g id="sensors">
-    <rect class="box sensor" x="24" y="56" width="130" height="44" rx="10"/>
-    <rect class="box sensor" x="24" y="116" width="130" height="44" rx="10"/>
-    <rect class="box sensor" x="24" y="176" width="130" height="44" rx="10"/>
-    <rect class="box sensor" x="24" y="236" width="130" height="44" rx="10"/>
-    <rect class="box sensor" x="24" y="296" width="130" height="44" rx="10"/>
-    <text class="label small" x="40" y="83">right</text>
-    <text class="label small" x="40" y="143">right-centre</text>
-    <text class="label small" x="40" y="203">centre</text>
-    <text class="label small" x="40" y="263">left-centre</text>
-    <text class="label small" x="40" y="323">left</text>
+    <rect class="box sensor" x="32" y="80" width="150" height="44" rx="10"/>
+    <rect class="box sensor" x="32" y="180" width="150" height="44" rx="10"/>
+    <rect class="box sensor" x="32" y="280" width="150" height="44" rx="10"/>
+    <rect class="box sensor" x="32" y="400" width="150" height="44" rx="10"/>
+    <rect class="box sensor" x="32" y="520" width="150" height="44" rx="10"/>
+    <text class="label small" x="48" y="107">right</text>
+    <text class="label small" x="48" y="207">right-centre</text>
+    <text class="label small" x="48" y="307">centre</text>
+    <text class="label small" x="48" y="427">left-centre</text>
+    <text class="label small" x="48" y="547">left</text>
   </g>
 
-  <!-- Weight matrix: 5 rows × 2 columns (L / R) -->
-  <g id="weights">
-    <!-- headers -->
-    <text class="label tiny" x="268" y="50" text-anchor="middle">’ left</text>
-    <text class="label tiny" x="348" y="50" text-anchor="middle">’ right</text>
-
-    <!-- row y centers: 78, 138, 198, 258, 318 -->
-    <g fill="#fff4e8" stroke="#1c2430" stroke-width="2">
-      <rect x="246" y="60" width="44" height="36" rx="8"/><rect x="326" y="60" width="44" height="36" rx="8"/>
-      <rect x="246" y="120" width="44" height="36" rx="8"/><rect x="326" y="120" width="44" height="36" rx="8"/>
-      <rect x="246" y="180" width="44" height="36" rx="8"/><rect x="326" y="180" width="44" height="36" rx="8"/>
-      <rect x="246" y="240" width="44" height="36" rx="8"/><rect x="326" y="240" width="44" height="36" rx="8"/>
-      <rect x="246" y="300" width="44" height="36" rx="8"/><rect x="326" y="300" width="44" height="36" rx="8"/>
-    </g>
-    <g class="label symbol" fill="#c85a1e">
-      <text x="268" y="78">×</text><text x="348" y="78">×</text>
-      <text x="268" y="138">×</text><text x="348" y="138">×</text>
-      <text x="268" y="198">×</text><text x="348" y="198">×</text>
-      <text x="268" y="258">×</text><text x="348" y="258">×</text>
-      <text x="268" y="318">×</text><text x="348" y="318">×</text>
-    </g>
-    <text class="label count" x="308" y="360" text-anchor="middle">10 weights</text>
+  <!-- LEFT weights: vertical stack in top band -->
+  <text class="label small" x="300" y="92" fill="#3a5ea8">5 weights to LEFT</text>
+  <g id="wL">
+    <rect class="box weight" x="290" y="104" width="58" height="32" rx="8"/>
+    <rect class="box weight" x="290" y="144" width="58" height="32" rx="8"/>
+    <rect class="box weight" x="290" y="184" width="58" height="32" rx="8"/>
+    <rect class="box weight" x="290" y="224" width="58" height="32" rx="8"/>
+    <rect class="box weight" x="290" y="264" width="58" height="32" rx="8"/>
+    <text class="sym" x="319" y="120" fill="#3a5ea8">x</text>
+    <text class="sym" x="319" y="160" fill="#3a5ea8">x</text>
+    <text class="sym" x="319" y="200" fill="#3a5ea8">x</text>
+    <text class="sym" x="319" y="240" fill="#3a5ea8">x</text>
+    <text class="sym" x="319" y="280" fill="#3a5ea8">x</text>
   </g>
 
-  <!-- Biases -->
-  <g id="biases">
-    <rect class="box bias" x="500" y="120" width="70" height="44" rx="10"/>
-    <rect class="box bias" x="500" y="240" width="70" height="44" rx="10"/>
-    <text class="label small" x="512" y="147">bias L</text>
-    <text class="label small" x="512" y="267">bias R</text>
-    <text class="label count" x="535" y="360" text-anchor="middle">+ 2 biases</text>
+  <!-- Bias L on the side, ABOVE the convergence corridor -->
+  <rect class="box bias" x="480" y="96" width="86" height="40" rx="10"/>
+  <text class="label small" x="496" y="121">bias L</text>
+
+  <!-- Left neuron + wheel -->
+  <circle class="box neuron" cx="680" cy="200" r="36"/>
+  <text class="sym" x="680" y="200">+</text>
+  <text class="label tiny" x="680" y="252" text-anchor="middle">left neuron</text>
+  <rect class="box motor" x="800" y="176" width="130" height="48" rx="10"/>
+  <text class="label small" x="822" y="205">left wheel</text>
+
+  <!-- Sensors -> left weights (same index) -->
+  <path class="line" d="M182,102 H290"/>
+  <path class="line" d="M182,202 C230,202 250,160 290,160"/>
+  <path class="line" d="M182,302 C230,302 250,200 290,200"/>
+  <path class="line" d="M182,422 C220,422 250,240 290,240"/>
+  <path class="line" d="M182,542 C220,542 250,280 290,280"/>
+
+  <!-- Left weights fan to a merge point, then to neuron (below bias) -->
+  <path class="line-L" d="M348,120 H420 V200 H560"/>
+  <path class="line-L" d="M348,160 H420"/>
+  <path class="line-L" d="M348,200 H560"/>
+  <path class="line-L" d="M348,240 H420 V200"/>
+  <path class="line-L" d="M348,280 H420 V200"/>
+  <!-- bias drops into the corridor -->
+  <path class="line-L" d="M523,136 V200 H560"/>
+  <!-- merge to neuron -->
+  <path class="line-L" d="M560,200 H644"/>
+  <path class="line-L" d="M716,200 H800"/>
+
+  <!-- RIGHT weights: vertical stack in bottom band -->
+  <text class="label small" x="300" y="378" fill="#c85a1e">5 weights to RIGHT</text>
+  <g id="wR">
+    <rect class="box weight" x="290" y="390" width="58" height="32" rx="8"/>
+    <rect class="box weight" x="290" y="430" width="58" height="32" rx="8"/>
+    <rect class="box weight" x="290" y="470" width="58" height="32" rx="8"/>
+    <rect class="box weight" x="290" y="510" width="58" height="32" rx="8"/>
+    <rect class="box weight" x="290" y="550" width="58" height="32" rx="8"/>
+    <text class="sym" x="319" y="406" fill="#c85a1e">x</text>
+    <text class="sym" x="319" y="446" fill="#c85a1e">x</text>
+    <text class="sym" x="319" y="486" fill="#c85a1e">x</text>
+    <text class="sym" x="319" y="526" fill="#c85a1e">x</text>
+    <text class="sym" x="319" y="566" fill="#c85a1e">x</text>
   </g>
 
-  <!-- Neurons -->
-  <g id="neurons">
-    <circle class="box neuron" cx="690" cy="142" r="36"/>
-    <circle class="box neuron" cx="690" cy="262" r="36"/>
-    <text class="label symbol" x="690" y="142">+</text>
-    <text class="label symbol" x="690" y="262">+</text>
-    <text class="label tiny" x="690" y="188" text-anchor="middle">left neuron</text>
-    <text class="label tiny" x="690" y="308" text-anchor="middle">right neuron</text>
-  </g>
+  <!-- Bias R on the side, ABOVE bottom corridor -->
+  <rect class="box bias" x="480" y="382" width="86" height="40" rx="10"/>
+  <text class="label small" x="496" y="407">bias R</text>
 
-  <!-- Motors / wheels -->
-  <g id="motors">
-    <rect class="box motor" x="780" y="118" width="110" height="48" rx="10"/>
-    <rect class="box motor" x="780" y="238" width="110" height="48" rx="10"/>
-    <text class="label small" x="796" y="147">left wheel</text>
-    <text class="label small" x="796" y="267">right wheel</text>
-    <text class="label tiny" x="835" y="360" text-anchor="middle">motor speeds</text>
-  </g>
+  <circle class="box neuron" cx="680" cy="486" r="36"/>
+  <text class="sym" x="680" y="486">+</text>
+  <text class="label tiny" x="680" y="538" text-anchor="middle">right neuron</text>
+  <rect class="box motor" x="800" y="462" width="130" height="48" rx="10"/>
+  <text class="label small" x="818" y="491">right wheel</text>
 
-  <!-- Wiring: sensors ’ weights -->
-  <g class="line">
-    <path d="M154,78 H246"/>
-    <path d="M154,138 H246"/>
-    <path d="M154,198 H246"/>
-    <path d="M154,258 H246"/>
-    <path d="M154,318 H246"/>
-  </g>
+  <!-- Sensors -> right weights -->
+  <path class="line" d="M182,102 C220,102 250,406 290,406"/>
+  <path class="line" d="M182,202 C220,202 250,446 290,446"/>
+  <path class="line" d="M182,302 C230,302 250,486 290,486"/>
+  <path class="line" d="M182,422 C230,422 250,526 290,526"/>
+  <path class="line" d="M182,542 H290"/>
 
-  <!-- weights ’ neurons (left column to left neuron, right to right) -->
-  <g class="line">
-    <path d="M290,78 C360,78 430,142 654,142"/>
-    <path d="M290,138 C360,138 430,142 654,142"/>
-    <path d="M290,198 C360,198 430,142 654,142"/>
-    <path d="M290,258 C360,258 430,142 654,142"/>
-    <path d="M290,318 C360,318 430,142 654,142"/>
+  <!-- Right weights fan to merge, bias joins from above -->
+  <path class="line-R" d="M348,406 H420 V486 H560"/>
+  <path class="line-R" d="M348,446 H420"/>
+  <path class="line-R" d="M348,486 H560"/>
+  <path class="line-R" d="M348,526 H420 V486"/>
+  <path class="line-R" d="M348,566 H420 V486"/>
+  <path class="line-R" d="M523,422 V486 H560"/>
+  <path class="line-R" d="M560,486 H644"/>
+  <path class="line-R" d="M716,486 H800"/>
 
-    <path d="M370,78 C440,78 520,262 654,262"/>
-    <path d="M370,138 C440,138 520,262 654,262"/>
-    <path d="M370,198 C440,198 520,262 654,262"/>
-    <path d="M370,258 C440,258 520,262 654,262"/>
-    <path d="M370,318 C440,318 520,262 654,262"/>
-  </g>
-
-  <!-- biases ’ neurons -->
-  <path class="line-strong" d="M570,142 H654"/>
-  <path class="line-strong" d="M570,262 H654"/>
-
-  <!-- neurons ’ wheels -->
-  <path class="line-strong" d="M726,142 H780"/>
-  <path class="line-strong" d="M726,262 H780"/>
-
-  <!-- Formula strip -->
-  <rect x="24" y="378" width="872" height="32" rx="8" fill="#fff" stroke="#1c2430" stroke-width="1.5"/>
-  <text class="label small" x="460" y="399" text-anchor="middle">
-    wheel = activation( bias + £ (sensor × weight) )   ·   5 inputs ’ 10 weights + 2 biases ’ 2 outputs
+  <!-- Footer -->
+  <rect x="32" y="612" width="936" height="22" rx="6" fill="#fff" stroke="#1c2430" stroke-width="1.5"/>
+  <text class="label small" x="500" y="627" text-anchor="middle">
+    wheel = activation( bias + sum(sensor x weight) )   |   5 sensors -&gt; 10 weights + 2 biases -&gt; 2 neurons -&gt; 2 wheels
   </text>
 </svg>

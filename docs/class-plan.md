@@ -35,8 +35,9 @@ It is the whole “brain” used by the interface:
 [Open as SVG](ann-structure.svg) if you prefer a vector copy for slides.
 
 ```mermaid
-flowchart LR
+flowchart TB
   subgraph sensors["5 sensors"]
+    direction TB
     S1[right]
     S2[right-centre]
     S3[centre]
@@ -44,43 +45,42 @@ flowchart LR
     S5[left]
   end
 
-  subgraph weights["10 synaptic weights ×"]
-    W[sensor × wheel]
-  end
-
-  subgraph biases["2 biases"]
+  subgraph leftPath["LEFT wheel path"]
+    direction LR
+    WL["5 weights x"]
     BL[bias L]
-    BR[bias R]
-  end
-
-  subgraph neurons["2 neurons +"]
-    NL["+ left"]
-    NR["+ right"]
-  end
-
-  subgraph wheels["2 wheels"]
+    NL["+ left neuron"]
     ML[left wheel]
-    MR[right wheel]
+    WL --> NL
+    BL --> NL
+    NL --> ML
   end
 
-  sensors --> weights
-  weights --> NL
-  weights --> NR
-  BL --> NL
-  BR --> NR
-  NL --> ML
-  NR --> MR
+  subgraph rightPath["RIGHT wheel path"]
+    direction LR
+    WR["5 weights x"]
+    BR[bias R]
+    NR["+ right neuron"]
+    MR[right wheel]
+    WR --> NR
+    BR --> NR
+    NR --> MR
+  end
+
+  sensors --> WL
+  sensors --> WR
 ```
 
 | Block | Count | Role in class language |
 |-------|------:|------------------------|
 | **Sensors** | 5 | Front proximity inputs (right … left) |
-| **Synaptic weights** | 10 | Each sensor × each wheel (`×`) — push or pull |
-| **Biases** | 2 | Constant add into each neuron even if sensors are quiet |
-| **Neurons** | 2 | Each **adds** its bias + five weighted sensors (`+`) |
+| **Left weights** | 5 | Vertical stack on top — each sensor `x` into the left neuron |
+| **Right weights** | 5 | Vertical stack below — each sensor `x` into the right neuron |
+| **Biases** | 2 | On the side of each path (`bias L` top, `bias R` bottom) |
+| **Neurons** | 2 | Each **adds** bias + five weighted sensors (`+`) |
 | **Wheels** | 2 | Neuron total is **sent** as left / right motor speed |
 
-So pupils can count: **5 → (10 + 2) → 2 → 2**.
+So pupils can count: **5 → (5+5) weights + 2 biases → 2 neurons → 2 wheels**.
 
 ---
 
