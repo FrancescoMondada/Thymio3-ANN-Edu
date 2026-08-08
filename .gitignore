@@ -3,3 +3,5 @@ dist/
 vendor/
 .DS_Store
 *.local
+/*.jpg
+/*.jpeg
